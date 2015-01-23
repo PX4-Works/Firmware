@@ -149,7 +149,7 @@ ARCHWARNINGS		 = -Wall \
 			   -Wdouble-promotion \
 			   -Wshadow \
 			   -Wfloat-equal \
-			   -Wframe-larger-than=1024 \
+			   -Wframe-larger-than=2560 \
 			   -Wpointer-arith \
 			   -Wlogical-op \
 			   -Wmissing-declarations \
