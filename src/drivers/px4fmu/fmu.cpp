@@ -1427,6 +1427,14 @@ PX4FMU::gpio_set_function(uint32_t gpios, int function)
 		}
 	}
 
+	PROBE_INIT(PROBE_N(1)|PROBE_N(2)|PROBE_N(3)|PROBE_N(4)|PROBE_N(5)|PROBE_N(6));
+	PROBE_MARK(1);PROBE(1,false);
+	PROBE_MARK(2);PROBE(2,false);
+	PROBE_MARK(3);PROBE(3,false);
+	PROBE_MARK(4);PROBE(4,false);
+	PROBE_MARK(5);PROBE(5,false);
+	PROBE_MARK(6);PROBE(6,false);
+
 #if defined(CONFIG_ARCH_BOARD_PX4FMU_V1)
 
 	/* flip buffer to input mode if required */
