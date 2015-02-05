@@ -64,6 +64,11 @@ MODULES		+= systemcmds/dumpfile
 MODULES		+= systemcmds/ver
 
 #
+# Os test and measurement 
+#
+MODULES 	+= systemcmds/measure_os_timing
+
+#
 # General system control
 #
 MODULES		+= modules/commander
