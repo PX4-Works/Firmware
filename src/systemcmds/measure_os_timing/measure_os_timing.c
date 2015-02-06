@@ -36,6 +36,7 @@
  ****************************************************************************/
 
 #include <nuttx/config.h>
+#include <nuttx/arch.h>
 #include <arch/board/board.h>
 
 #include <sys/types.h>
@@ -75,7 +76,12 @@ static void wd_timeout_func(int argc, uint32_t arg1, ...);
 static void *wd_swap_hw_thread_func(void *parameter);
 static void *wd_swap_calc_thread_func(void *parameter);
 static int wd_swap_test(void);
+static int sleep_swap_test(void);
 static void sigalarm(int signo);
+static void *sleep_swap_hw_thread_func(void *parameter);
+static void *hard_thread_1_func(void *parameter);
+static void *hard_thread_2_func(void *parameter);
+static int hard_swap_test(void);
 
 /****************************************************************************
  * Private Data
@@ -132,12 +138,16 @@ static void wd_timeout_func(int argc, uint32_t arg1, ...)
 }
 
 /****************************************************************************
- * wd_swap_hw_thread_func
+ * sigalarm
  ****************************************************************************/
 static void sigalarm(int signo)
 {
     (void)signo;
 }
+
+/****************************************************************************
+ * wd_swap_hw_thread_func
+ ****************************************************************************/
 static void *wd_swap_hw_thread_func(void *parameter)
 {
 	struct wd_swap_params * data  = (struct wd_swap_params *)parameter;
@@ -179,6 +189,30 @@ static void *wd_swap_hw_thread_func(void *parameter)
 	pthread_exit(NULL);
 
 }
+
+/****************************************************************************
+ * sleep_swap_hw_thread_func
+ ****************************************************************************/
+static void *sleep_swap_hw_thread_func(void *parameter)
+{
+	struct wd_swap_params * data  = (struct wd_swap_params *)parameter;
+    printf("usleep hw thread: Start\n");
+
+
+	while(thread_run) {
+
+		PROBE(3,false);
+		usleep(1000);
+		PROBE(3,true);
+        up_udelay(14);
+
+	}
+
+	printf("usleep hw thread: Exit\n");
+	pthread_exit(NULL);
+
+}
+
 /****************************************************************************
  * wd_swap_waiter_thread_func
  ****************************************************************************/
@@ -190,19 +224,78 @@ static void *wd_swap_calc_thread_func(void *parameter)
 
 	while(thread_run) {
 		PROBE(5,true);
-//	    data->cos_angle = cos(data->angle);
-//		data->angle += data->increment;
 		PROBE(5,false);
 	}
     printf("Wd calc thread: Exit\n");
 	pthread_exit(NULL);
 }
 
+
+/****************************************************************************
+ * sleep_swap_test
+ ****************************************************************************/
+
+static int sleep_swap_test()
+{
+	struct wd_swap_params *data =  &wd_swap_data;
+
+	int policy;
+	int last_priority = 0; // Priority we started with
+	struct sched_param param;
+
+	/* Save and boost Priority */
+	pthread_getschedparam(0, &policy,&param);
+	last_priority = param.sched_priority;
+	param.sched_priority = SCHED_PRIORITY_MAX -5;
+	pthread_setschedparam(0, policy,&param);
+	printf("sleep_swap_test Boosted Priority from %d to %d\n",last_priority,param.sched_priority);
+
+	thread_run = 1;
+
+	pthread_attr_t t1_atts;
+	pthread_attr_t t2_atts;
+	pthread_attr_init(&t1_atts);
+	pthread_attr_init(&t2_atts);
+
+	pthread_attr_setstacksize(&t1_atts, 1024);
+	pthread_attr_setstacksize(&t2_atts, 2048);
+
+	param.sched_priority = SCHED_PRIORITY_MAX -20;
+	(void)pthread_attr_setschedparam(&t1_atts, &param);
+
+	param.sched_priority = SCHED_PRIORITY_MAX -10;
+	(void)pthread_attr_setschedparam(&t2_atts, &param);
+
+
+	if (0 != pthread_create(&t1_pthread, &t1_atts, wd_swap_calc_thread_func ,(pthread_addr_t)data)) {
+		printf("sleep_swap_test ERROR: creating thread 1\n");
+	}
+	if (0 != pthread_create(&t2_pthread, &t2_atts, sleep_swap_hw_thread_func,(pthread_addr_t)data)) {
+		printf("sleep_swap_test ERROR: creating thread 2\n");
+	}
+	printf("sleep_swap_test wait\n");
+	sleep(10);
+	printf("sleep_swap_test request threads exit\n");
+	thread_run = 0;
+
+	pthread_kill(t2_pthread,WAKEUP_SIGNAL);
+
+	pthread_getschedparam(0, &policy,&param);
+	param.sched_priority = last_priority;
+	pthread_setschedparam(0, policy,&param);
+	printf("sleep_swap_test Dropped Priority\n");
+
+	pthread_join(t1_pthread, NULL);
+	pthread_join(t2_pthread, NULL);
+	printf("sleep_swap_test done\n");
+	return 0;
+
+}
 /****************************************************************************
  * wd_swap_test
  ****************************************************************************/
 
-static int wd_swap_test(void)
+static int wd_swap_test()
 {
 	struct wd_swap_params *data =  &wd_swap_data;
 
@@ -265,6 +358,101 @@ static int wd_swap_test(void)
 	data->wdog= (WDOG_ID)-1;
 	data->angle = 0.0;
 	data->cos_angle = 0.0;
+	return 0;
+
+}
+
+/****************************************************************************
+ * hard_thread_1_func
+ ****************************************************************************/
+
+static void *hard_thread_1_func(void *parameter)
+{
+	struct wd_swap_params * data  = (struct wd_swap_params *)parameter;
+    printf("hard_thread 1: Start\n");
+
+	while(thread_run) {
+		PROBE(3,true);
+		pthread_yield();
+		PROBE(3,false);
+	}
+    printf("hard_thread 1: Exit\n");
+	pthread_exit(NULL);
+}
+
+/****************************************************************************
+ * hard_thread_2_func
+ ****************************************************************************/
+
+static void *hard_thread_2_func(void *parameter)
+{
+	struct wd_swap_params * data  = (struct wd_swap_params *)parameter;
+    printf("hard_thread 2: Start\n");
+
+	while(thread_run) {
+		PROBE(4,true);
+		pthread_yield();
+		PROBE(4,false);
+	}
+    printf("hard_thread 2: Exit\n");
+	pthread_exit(NULL);
+}
+
+/****************************************************************************
+ * hard_swap_test
+ ****************************************************************************/
+
+static int hard_swap_test()
+{
+	int policy;
+	int last_priority = 0; // Priority we started with
+	struct sched_param param;
+
+	/* Save and boost Priority */
+	pthread_getschedparam(0, &policy,&param);
+	last_priority = param.sched_priority;
+	param.sched_priority = SCHED_PRIORITY_MAX -5;
+	pthread_setschedparam(0, policy,&param);
+	printf("hard_swap_test Boosted Priority from %d to %d\n",last_priority,param.sched_priority);
+
+	thread_run = 1;
+
+	pthread_attr_t t1_atts;
+	pthread_attr_t t2_atts;
+	pthread_attr_init(&t1_atts);
+	pthread_attr_init(&t2_atts);
+
+	pthread_attr_setstacksize(&t1_atts, 1024);
+	pthread_attr_setstacksize(&t2_atts, 1024);
+
+	param.sched_priority = SCHED_PRIORITY_MAX -10;
+	(void)pthread_attr_setschedparam(&t1_atts, &param);
+
+	param.sched_priority = SCHED_PRIORITY_MAX -10;
+	(void)pthread_attr_setschedparam(&t2_atts, &param);
+
+
+	if (0 != pthread_create(&t1_pthread, &t1_atts, hard_thread_1_func ,(pthread_addr_t)1)) {
+		printf("hard_swap_test ERROR: creating thread 1\n");
+	}
+	if (0 != pthread_create(&t2_pthread, &t2_atts, hard_thread_2_func,(pthread_addr_t)2)) {
+		printf("hard_swap_test ERROR: creating thread 2\n");
+	}
+	printf("hard_swap_test wait\n");
+	sleep(10);
+	printf("hard_swap_test request threads exit\n");
+	thread_run = 0;
+
+	pthread_kill(t2_pthread,WAKEUP_SIGNAL);
+
+	pthread_getschedparam(0, &policy,&param);
+	param.sched_priority = last_priority;
+	pthread_setschedparam(0, policy,&param);
+	printf("hard_swap_test Dropped Priority\n");
+
+	pthread_join(t1_pthread, NULL);
+	pthread_join(t2_pthread, NULL);
+	printf("hard_swap_test done\n");
 	return 0;
 
 }
@@ -383,12 +571,25 @@ int measure_os_timing_main(int argc, char *argv[])
 		return wd_swap_test();
 
 	/*
+	 * Measure the usleep context swap time.
+	 */
+	if (!strcmp(argv[1], "usleep"))
+		return sleep_swap_test();
+
+	/*
+	 * Measure the hard swap time.
+	 */
+	if (!strcmp(argv[1], "har"))
+		return hard_swap_test();
+
+
+	/*
 	 * Measure the mutex context swap time.
 	 */
 	if (!strcmp(argv[1], "mutex"))
 		return mutex_swap_test();
 
-	fprintf(stderr, "unrecognised command, try 'wd', 'mutex' \n");
+	fprintf(stderr, "unrecognised command, try 'wd', 'mutex', 'hard' or 'usleep'\n");
 	return -EINVAL;
 
 }
