@@ -76,7 +76,7 @@ static void wd_timeout_func(int argc, uint32_t arg1, ...);
 static void *wd_swap_hw_thread_func(void *parameter);
 static void *wd_swap_calc_thread_func(void *parameter);
 static int wd_swap_test(void);
-static int sleep_swap_test(void);
+static int sleep_swap_test(int timeinus);
 static void sigalarm(int signo);
 static void *sleep_swap_hw_thread_func(void *parameter);
 static void *hard_thread_1_func(void *parameter);
@@ -98,6 +98,7 @@ struct wd_swap_params {
 	double increment;
 	double cos_angle;
 	pthread_t waiter;
+	int timeinus;
 };
 
 static struct wd_swap_params wd_swap_data  = {
@@ -106,7 +107,8 @@ static struct wd_swap_params wd_swap_data  = {
 	.angle = 0.0,
 	.cos_angle = 0.0,
 	.increment = 0.01 * M_DEG_TO_RAD,
-	.waiter = -1
+	.waiter = -1,
+	.timeinus = 1000
 };
 
 /****************************************************************************
@@ -202,7 +204,7 @@ static void *sleep_swap_hw_thread_func(void *parameter)
 	while(thread_run) {
 
 		PROBE(3,false);
-		usleep(1000);
+		usleep(data->timeinus);
 		PROBE(3,true);
         up_udelay(14);
 
@@ -219,7 +221,7 @@ static void *sleep_swap_hw_thread_func(void *parameter)
 
 static void *wd_swap_calc_thread_func(void *parameter)
 {
-	struct wd_swap_params * data  = (struct wd_swap_params *)parameter;
+	//struct wd_swap_params * data  = (struct wd_swap_params *)parameter;
     printf("Wd calc thread: Start\n");
 
 	while(thread_run) {
@@ -235,10 +237,10 @@ static void *wd_swap_calc_thread_func(void *parameter)
  * sleep_swap_test
  ****************************************************************************/
 
-static int sleep_swap_test()
+static int sleep_swap_test(int timeinus)
 {
 	struct wd_swap_params *data =  &wd_swap_data;
-
+	data->timeinus = timeinus;
 	int policy;
 	int last_priority = 0; // Priority we started with
 	struct sched_param param;
@@ -368,7 +370,7 @@ static int wd_swap_test()
 
 static void *hard_thread_1_func(void *parameter)
 {
-	struct wd_swap_params * data  = (struct wd_swap_params *)parameter;
+//	struct wd_swap_params * data  = (struct wd_swap_params *)parameter;
     printf("hard_thread 1: Start\n");
 
 	while(thread_run) {
@@ -386,7 +388,7 @@ static void *hard_thread_1_func(void *parameter)
 
 static void *hard_thread_2_func(void *parameter)
 {
-	struct wd_swap_params * data  = (struct wd_swap_params *)parameter;
+	//struct wd_swap_params * data  = (struct wd_swap_params *)parameter;
     printf("hard_thread 2: Start\n");
 
 	while(thread_run) {
@@ -561,8 +563,13 @@ int measure_os_timing_main(int argc, char *argv[])
 {
 
 
-	PROBE(6,true);
-	PROBE(6,false);
+	PROBE_INIT(PROBE_N(1)|PROBE_N(2)|PROBE_N(3)|PROBE_N(4)|PROBE_N(5)|PROBE_N(6));
+	PROBE_MARK(1);PROBE(1,false);
+	PROBE_MARK(2);PROBE(2,false);
+	PROBE_MARK(3);PROBE(3,false);
+	PROBE_MARK(4);PROBE(4,false);
+	PROBE_MARK(5);PROBE(5,false);
+	PROBE_MARK(6);PROBE(6,false);
 
 	/*
 	 * Measure the wd_ context swap time.
@@ -573,13 +580,35 @@ int measure_os_timing_main(int argc, char *argv[])
 	/*
 	 * Measure the usleep context swap time.
 	 */
-	if (!strcmp(argv[1], "usleep"))
-		return sleep_swap_test();
+	if (!strcmp(argv[1], "usleep")) {
+		int time = 1000;
+		if (argc > 2) {
+			time = atol(argv[2]);
+		}
+		return sleep_swap_test(time);
+	}
+
+	/*
+	 * Measure the usleep context swap time.
+	 */
+	if (!strcmp(argv[1], "pulse")) {
+		int time = 1000;
+		if (argc > 2) {
+			time = atol(argv[2]);
+		}
+		int j = 1000;
+		while(--j) {
+			PROBE(3,false);
+			usleep(time);
+			PROBE(3,true);
+		}
+		return 0;
+	}
 
 	/*
 	 * Measure the hard swap time.
 	 */
-	if (!strcmp(argv[1], "har"))
+	if (!strcmp(argv[1], "hard"))
 		return hard_swap_test();
 
 
@@ -589,7 +618,7 @@ int measure_os_timing_main(int argc, char *argv[])
 	if (!strcmp(argv[1], "mutex"))
 		return mutex_swap_test();
 
-	fprintf(stderr, "unrecognised command, try 'wd', 'mutex', 'hard' or 'usleep'\n");
+	fprintf(stderr, "unrecognised command, try 'wd', 'mutex', 'hard', 'pulse' or 'usleep'\n");
 	return -EINVAL;
 
 }
