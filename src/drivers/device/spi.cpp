@@ -92,7 +92,6 @@ int
 SPI::init()
 {
 	int ret = OK;
-
 	/* attach to the spi bus */
 	if (_dev == nullptr)
 		_dev = up_spiinitialize(_bus);
@@ -174,6 +173,8 @@ SPI::set_frequency(uint32_t frequency)
 	_frequency = frequency;
 }
 
+static unsigned max_counts[8][8];
+
 int
 SPI::_transfer(uint8_t *send, uint8_t *recv, unsigned len)
 {
@@ -184,7 +185,9 @@ SPI::_transfer(uint8_t *send, uint8_t *recv, unsigned len)
 
 	/* do the transfer */
 	SPI_EXCHANGE(_dev, send, recv, len);
-
+	if (max_counts[_bus][_device] < len) {
+		max_counts[_bus][_device] = len;
+	}
 	/* and clean up */
 	SPI_SELECT(_dev, _device, false);
 
