@@ -82,7 +82,7 @@ static void *sleep_swap_hw_thread_func(void *parameter);
 static void *hard_thread_1_func(void *parameter);
 static void *hard_thread_2_func(void *parameter);
 static int hard_swap_test(void);
-
+static int changepriority(int newprioity);
 /****************************************************************************
  * Private Data
  ****************************************************************************/
@@ -216,6 +216,23 @@ static void *sleep_swap_hw_thread_func(void *parameter)
 }
 
 /****************************************************************************
+ * changepriority
+ ****************************************************************************/
+static int changepriority(int newprioity)
+{
+	struct sched_param param;
+	int policy;
+
+	/* Save and boost Priority */
+	pthread_getschedparam(0, &policy,&param);
+	int last_priority = param.sched_priority;
+	param.sched_priority = newprioity;
+	pthread_setschedparam(0, policy,&param);
+	printf("changepriority from %d to %d\n",last_priority,param.sched_priority);
+	return last_priority;
+}
+
+/****************************************************************************
  * wd_swap_waiter_thread_func
  ****************************************************************************/
 
@@ -241,16 +258,10 @@ static int sleep_swap_test(int timeinus)
 {
 	struct wd_swap_params *data =  &wd_swap_data;
 	data->timeinus = timeinus;
-	int policy;
-	int last_priority = 0; // Priority we started with
 	struct sched_param param;
-
-	/* Save and boost Priority */
-	pthread_getschedparam(0, &policy,&param);
-	last_priority = param.sched_priority;
-	param.sched_priority = SCHED_PRIORITY_MAX -5;
-	pthread_setschedparam(0, policy,&param);
-	printf("sleep_swap_test Boosted Priority from %d to %d\n",last_priority,param.sched_priority);
+	int new_pri = SCHED_PRIORITY_MAX -5;
+	int last_priority = changepriority(SCHED_PRIORITY_MAX -5);
+	printf("sleep_swap_test Boosted Priority from %d to %d\n",last_priority,new_pri);
 
 	thread_run = 1;
 
@@ -282,10 +293,8 @@ static int sleep_swap_test(int timeinus)
 
 	pthread_kill(t2_pthread,WAKEUP_SIGNAL);
 
-	pthread_getschedparam(0, &policy,&param);
-	param.sched_priority = last_priority;
-	pthread_setschedparam(0, policy,&param);
-	printf("sleep_swap_test Dropped Priority\n");
+	changepriority(last_priority);
+	printf("sleep_swap_test Dropped Priority from %d to %d\n",new_pri,last_priority);
 
 	pthread_join(t1_pthread, NULL);
 	pthread_join(t2_pthread, NULL);
@@ -307,16 +316,11 @@ static int wd_swap_test()
 	  return -ENOMEM;
 	}
 
-	int policy;
-	int last_priority = 0; // Priority we started with
 	struct sched_param param;
 
-	/* Save and boost Priority */
-	pthread_getschedparam(0, &policy,&param);
-	last_priority = param.sched_priority;
-	param.sched_priority = SCHED_PRIORITY_MAX -5;
-	pthread_setschedparam(0, policy,&param);
-	printf("wd_swap_test Boosted Priority from %d to %d\n",last_priority,param.sched_priority);
+	int new_pri = SCHED_PRIORITY_MAX -5;
+	int last_priority = changepriority(SCHED_PRIORITY_MAX -5);
+	printf("wd_swap_test Boosted Priority from %d to %d\n",last_priority,new_pri);
 
 	thread_run = 1;
 
@@ -348,10 +352,8 @@ static int wd_swap_test()
 
 	pthread_kill(t2_pthread,WAKEUP_SIGNAL);
 
-	pthread_getschedparam(0, &policy,&param);
-	param.sched_priority = last_priority;
-	pthread_setschedparam(0, policy,&param);
-	printf("wd_swap_test Dropped Priority\n");
+	changepriority(last_priority);
+	printf("wd_swap_test Dropped Priority from %d to %d\n",new_pri,last_priority);
 
 	pthread_join(t1_pthread, NULL);
 	pthread_join(t2_pthread, NULL);
@@ -406,16 +408,11 @@ static void *hard_thread_2_func(void *parameter)
 
 static int hard_swap_test()
 {
-	int policy;
-	int last_priority = 0; // Priority we started with
 	struct sched_param param;
 
-	/* Save and boost Priority */
-	pthread_getschedparam(0, &policy,&param);
-	last_priority = param.sched_priority;
-	param.sched_priority = SCHED_PRIORITY_MAX -5;
-	pthread_setschedparam(0, policy,&param);
-	printf("hard_swap_test Boosted Priority from %d to %d\n",last_priority,param.sched_priority);
+	int new_pri = SCHED_PRIORITY_MAX -5;
+	int last_priority = changepriority(SCHED_PRIORITY_MAX -5);
+	printf("hard_swap_test Boosted Priority from %d to %d\n",last_priority,new_pri);
 
 	thread_run = 1;
 
@@ -447,10 +444,8 @@ static int hard_swap_test()
 
 	pthread_kill(t2_pthread,WAKEUP_SIGNAL);
 
-	pthread_getschedparam(0, &policy,&param);
-	param.sched_priority = last_priority;
-	pthread_setschedparam(0, policy,&param);
-	printf("hard_swap_test Dropped Priority\n");
+	changepriority(last_priority);
+	printf("hard_swap_test Dropped Priority from %d to %d\n",new_pri,last_priority);
 
 	pthread_join(t1_pthread, NULL);
 	pthread_join(t2_pthread, NULL);
@@ -499,16 +494,11 @@ static void *mutex_swap_thread_func(void *parameter)
 static int mutex_swap_test(void)
 {
 
-	int policy;
-	int last_priority = 0; // Priority we started with
 	struct sched_param param;
 
-	/* Save and boost Priority */
-	pthread_getschedparam(0, &policy,&param);
-	last_priority = param.sched_priority;
-	param.sched_priority = SCHED_PRIORITY_MAX -5;
-	pthread_setschedparam(0, policy,&param);
-    printf("mutex_swap Boosted Priority from %d to %d\n",last_priority,param.sched_priority);
+	int new_pri = SCHED_PRIORITY_MAX -5;
+	int last_priority = changepriority(SCHED_PRIORITY_MAX -5);
+	printf("mutex_swap Boosted Priority from %d to %d\n",last_priority,new_pri);
 
 	thread_run = 1;
 
@@ -539,10 +529,8 @@ static int mutex_swap_test(void)
 	printf("mutex_swap request threads exit\n");
 	thread_run = 0;
 
-	pthread_getschedparam(0, &policy,&param);
-	param.sched_priority = last_priority;
-	pthread_setschedparam(0, policy,&param);
-    printf("mutex_swap Dropped Priority\n");
+	changepriority(last_priority);
+	printf("mutex_swap Dropped Priority from %d to %d\n",new_pri,last_priority);
 
 	pthread_join(t1_pthread, NULL);
 	pthread_join(t2_pthread, NULL);
@@ -597,11 +585,13 @@ int measure_os_timing_main(int argc, char *argv[])
 			time = atol(argv[2]);
 		}
 		int j = 1000;
+		int last_priority = changepriority(SCHED_PRIORITY_MAX -5);
 		while(--j) {
 			PROBE(3,false);
 			usleep(time);
 			PROBE(3,true);
 		}
+		last_priority = changepriority(last_priority);
 		return 0;
 	}
 
