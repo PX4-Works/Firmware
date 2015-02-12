@@ -51,6 +51,9 @@
 #include <math.h>
 #include <pthread.h>
 #include <nuttx/wdog.h>
+#include <nuttx/clock.h>
+
+#include <drivers/drv_hrt.h>
 
 
 
@@ -559,11 +562,38 @@ int measure_os_timing_main(int argc, char *argv[])
 	PROBE_MARK(5);PROBE(5,false);
 	PROBE_MARK(6);PROBE(6,false);
 
-	/*
-	 * Measure the wd_ context swap time.
-	 */
-	if (!strcmp(argv[1], "wd"))
-		return wd_swap_test();
+
+
+        /*
+         * Measure the wd_ context swap time.
+         */
+        if (!strcmp(argv[1], "time"))
+          {
+            struct timespec ts;
+            irqstate_t flags;
+            hrt_abstime h;
+            uint64_t s;
+            printf("h,c\n");
+            for (int i = 0; i < 1000; i++)
+              {
+                flags = irqsave();
+                h = hrt_absolute_time();
+                s = clock_systimer64();
+                (void)up_timer_gettime(&ts);
+                irqrestore(flags);
+                printf("%llu,%llu,%lu,%lu\n",  h,s,ts.tv_sec,ts.tv_nsec);
+                usleep(100);
+              }
+
+            return 0;
+
+          }
+
+        /*
+         * Measure the wd_ context swap time.
+         */
+        if (!strcmp(argv[1], "wd"))
+                return wd_swap_test();
 
 	/*
 	 * Measure the usleep context swap time.
@@ -587,9 +617,9 @@ int measure_os_timing_main(int argc, char *argv[])
 		int j = 1000;
 		int last_priority = changepriority(SCHED_PRIORITY_MAX -5);
 		while(--j) {
-			PROBE(3,false);
+                    PROBE(3,true);
 			usleep(time);
-			PROBE(3,true);
+                        PROBE(3,false);
 		}
 		last_priority = changepriority(last_priority);
 		return 0;
@@ -608,7 +638,7 @@ int measure_os_timing_main(int argc, char *argv[])
 	if (!strcmp(argv[1], "mutex"))
 		return mutex_swap_test();
 
-	fprintf(stderr, "unrecognised command, try 'wd', 'mutex', 'hard', 'pulse' or 'usleep'\n");
+	fprintf(stderr, "unrecognised command, try 'time' ,'wd', 'mutex', 'hard', 'pulse' or 'usleep'\n");
 	return -EINVAL;
 
 }
