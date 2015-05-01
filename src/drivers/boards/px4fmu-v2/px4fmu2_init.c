@@ -222,6 +222,7 @@ __EXPORT int matherr(struct exception *e)
 }
 #endif
 
+int usbmonitor_start(int argc, char **argv);
 __EXPORT int nsh_archinitialize(void)
 {
 
@@ -353,5 +354,6 @@ __EXPORT int nsh_archinitialize(void)
 	message("[boot] Initialized SDIO\n");
 	#endif
 
+	usbmonitor_start(0,0);
 	return OK;
 }
