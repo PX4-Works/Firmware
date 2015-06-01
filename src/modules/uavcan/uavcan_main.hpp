@@ -120,7 +120,7 @@ public:
 
 	int		teardown();
 	int		arm_actuators(bool arm);
-
+	int             leds(int r, int g, int b, int hz = 2);
 	void		print_info();
 
 	static UavcanNode *instance() { return _instance; }
