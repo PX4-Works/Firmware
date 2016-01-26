@@ -295,8 +295,7 @@ int io_timer_validate_channel_index(unsigned channel)
 	return rv;
 }
 
-
-static inline int get_channel_mode(unsigned channel)
+int io_timer_get_channel_mode(unsigned channel)
 {
 	io_timer_channel_allocation_t bit = 1 << channel;
 
@@ -325,7 +324,7 @@ static inline int allocate_channel_resource(unsigned channel, io_timer_channel_m
 
 static inline int free_channel_resource(unsigned channel)
 {
-	int mode = get_channel_mode(channel);
+	int mode = io_timer_get_channel_mode(channel);
 
 	if (mode > IOTimerChanMode_NotUsed) {
 		io_timer_channel_allocation_t bit = 1 << channel;
@@ -342,7 +341,7 @@ int io_timer_free_channel(unsigned channel)
 		return -EINVAL;
 	}
 
-	int mode = get_channel_mode(channel);
+	int mode = io_timer_get_channel_mode(channel);
 
 	if (mode > IOTimerChanMode_NotUsed) {
 		io_timer_set_enable(false, mode, 1 << channel);
@@ -692,7 +691,7 @@ int io_timer_set_ccr(unsigned channel, uint16_t value)
 	int rv = io_timer_validate_channel_index(channel);
 
 	if (rv == 0) {
-		if (get_channel_mode(channel) != IOTimerChanMode_PWMOut) {
+		if (io_timer_get_channel_mode(channel) != IOTimerChanMode_PWMOut) {
 
 			rv = -EIO;
 
@@ -716,7 +715,7 @@ uint16_t io_channel_get_ccr(unsigned channel)
 	uint16_t value = 0;
 
 	if (io_timer_validate_channel_index(channel) == 0 &&
-	    get_channel_mode(channel) == IOTimerChanMode_PWMOut) {
+	    io_timer_get_channel_mode(channel) == IOTimerChanMode_PWMOut) {
 		value = REG(channels_timer(channel), timer_io_channels[channel].ccr_offset) + 1;
 	}
 
