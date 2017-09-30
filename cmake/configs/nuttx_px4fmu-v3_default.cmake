@@ -77,6 +77,7 @@ set(config_module_list
 	systemcmds/top
 	systemcmds/topic_listener
 	systemcmds/ver
+	systemcmds/loadtest
 
 	#
 	# Testing
