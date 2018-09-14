@@ -469,9 +469,13 @@ __EXPORT int board_app_initialize(uintptr_t arg)
 	led_off(LED_RED);
 	led_off(LED_GREEN);
 	led_off(LED_BLUE);
-
+#if defined(CONFIG_KINETIS_SDHC)
 	int ret = nxphlite_sdhc_initialize();
-
+#else
+	// Bring up pullups
+	int ret = OK;
+//  VDD_3V3_SD_CARD_EN(true);
+#endif
 	if (ret != OK) {
 		board_autoled_on(LED_RED);
 		return ret;

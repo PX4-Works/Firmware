@@ -475,6 +475,11 @@ __BEGIN_DECLS
 	}
 
 #define PX4_GPIO_INIT_LIST {  \
+    PIN_TRACE_CLKOUT_1,   \
+    PIN_TRACE_D0_1,       \
+    PIN_TRACE_D1_1,       \
+    PIN_TRACE_D2_1,       \
+    PIN_TRACE_D3_1,       \
 		GPIO_LED_R,           \
 		GPIO_LED_G,           \
 		GPIO_LED_B,           \
