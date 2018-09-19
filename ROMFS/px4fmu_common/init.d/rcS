@@ -123,6 +123,7 @@ uorb start
 #
 tone_alarm start
 
+mavlink start -r 800000 -d /dev/ttyACM0 -m config -x
 #
 # Try to mount the microSD card.
 #

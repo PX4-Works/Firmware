@@ -14,13 +14,14 @@
 if ! ver hwcmp AEROFC_V1
 then
 	# Start MAVLink
-	mavlink start -r 800000 -d /dev/ttyACM0 -m config -x
+#	mavlink start -r 800000 -d /dev/ttyACM0 -m config -x
 fi
 
 if ver hwcmp NXPHLITE_V3
 then
 	set MAVLINK_COMPANION_DEVICE none
 	set MAVLINK_F "-r 1200 -d /dev/ttyS4"
+	set MAVLINK_F none
 fi
 
 if ver hwcmp OMNIBUS_F4SD
