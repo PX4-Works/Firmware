@@ -94,7 +94,7 @@
  */
 
 #define BOARD_PRDIV          2              /* PLL External Reference Divider */
-#define BOARD_VDIV           42             /* PLL VCO Divider (frequency multiplier) */
+#define BOARD_VDIV           24             /* PLL VCO Divider (frequency multiplier) */
 
 /* Define additional MCG_C2 Setting */
 
@@ -107,10 +107,10 @@
 
 /* SIM CLKDIV1 dividers */
 
-#define BOARD_OUTDIV1        1              /* Core        = MCG,    168 MHz */
-#define BOARD_OUTDIV2        3              /* Bus         = MCG / 3, 56 MHz */
-#define BOARD_OUTDIV3        3              /* FlexBus     = MCG / 3, 56 MHz */
-#define BOARD_OUTDIV4        6              /* Flash clock = MCG / 6, 28 MHz */
+#define BOARD_OUTDIV1        1              /* Core     96   = MCG,    168 MHz */
+#define BOARD_OUTDIV2        2              /* Bus         = MCG / 3, 56 MHz */
+#define BOARD_OUTDIV3        2              /* FlexBus     = MCG / 3, 56 MHz */
+#define BOARD_OUTDIV4        4              /* Flash clock = MCG / 6, 28 MHz */
 
 #define BOARD_CORECLK_FREQ  (BOARD_MCG_FREQ / BOARD_OUTDIV1)
 #define BOARD_BUS_FREQ      (BOARD_MCG_FREQ / BOARD_OUTDIV2)
@@ -130,8 +130,8 @@
  *                48Mhz = 168Mhz / (6 + 1) * (1 + 1)
  */
 
-#define BOARD_SIM_CLKDIV2_USBFRAC     2
-#define BOARD_SIM_CLKDIV2_USBDIV      7
+#define BOARD_SIM_CLKDIV2_USBFRAC     1
+#define BOARD_SIM_CLKDIV2_USBDIV      2
 #define BOARD_SIM_CLKDIV2_FREQ        (BOARD_SOPT2_FREQ / \
                                        BOARD_SIM_CLKDIV2_USBDIV * \
                                        BOARD_SIM_CLKDIV2_USBFRAC)
