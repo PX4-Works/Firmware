@@ -64,6 +64,8 @@
 #include <time.h>
 #include <float.h>
 #include <unistd.h>
+#include <nuttx/sched.h>
+#include "/home/david_s5/src/PX4/repos/mainline/Firmware/platforms/nuttx/NuttX/nuttx/sched/sched/sched.h"
 #ifndef __PX4_POSIX
 #include <termios.h>
 #endif
@@ -98,6 +100,10 @@
 #include "mavlink_command_sender.h"
 
 using matrix::wrap_2pi;
+
+extern "C" {
+	volatile struct pthread_tcb_s *g_mavlink_task = 0;
+}
 
 MavlinkReceiver::MavlinkReceiver(Mavlink *parent) :
 	_mavlink(parent),
@@ -2504,6 +2510,8 @@ MavlinkReceiver::receive_thread(void *arg)
 		sprintf(thread_name, "mavlink_rcv_if%d", _mavlink->get_instance_id());
 		px4_prctl(PR_SET_NAME, thread_name, px4_getpid());
 	}
+
+	g_mavlink_task = (pthread_tcb_s *) this_task();
 
 	// poll timeout in ms. Also defines the max update frequency of the mission & param manager, etc.
 	const int timeout = 10;
