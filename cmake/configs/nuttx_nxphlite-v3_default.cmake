@@ -15,36 +15,36 @@ set(config_module_list
 	drivers/magnetometer
 	drivers/telemetry
 
-	drivers/barometer/mpl3115a2
-	drivers/batt_smbus
-	drivers/blinkm
-	drivers/camera_trigger
-	drivers/imu/fxas21002c
-	drivers/imu/fxos8701cq
-	drivers/gps
+#	drivers/barometer/mpl3115a2
+#	drivers/batt_smbus
+#	drivers/blinkm
+#	drivers/camera_trigger
+#	drivers/imu/fxas21002c
+#	drivers/imu/fxos8701cq
+#	drivers/gps
 	drivers/kinetis
 	drivers/kinetis/adc
 	drivers/kinetis/tone_alarm
-	drivers/imu/l3gd20
-	drivers/mkblctrl
-	drivers/imu/mpu6000
-	drivers/imu/mpu9250
-	drivers/oreoled
+#	drivers/imu/l3gd20
+#	drivers/mkblctrl
+#	drivers/imu/mpu6000
+#	drivers/imu/mpu9250
+#	drivers/oreoled
 # NOT Portable YET drivers/pwm_input
 	drivers/pwm_out_sim
 	drivers/px4flow
-	drivers/px4fmu
-	drivers/rc_input
-	drivers/rgbled
-	drivers/rgbled_pwm
-	drivers/tap_esc
-	drivers/vmount
-	modules/sensors
+#	drivers/px4fmu
+#	drivers/rc_input
+#	drivers/rgbled
+#	drivers/rgbled_pwm
+#	drivers/tap_esc
+#	drivers/vmount
+#	modules/sensors
 
 	#
 	# System commands
 	#
-	systemcmds/bl_update
+#	systemcmds/bl_update
 	systemcmds/config
 	systemcmds/dumpfile
 	systemcmds/esc_calib
@@ -72,50 +72,50 @@ set(config_module_list
 	drivers/distance_sensor/sf0x/sf0x_tests
 ### NOT Portable YET 	drivers/test_ppm
 	#lib/rc/rc_tests
-	modules/commander/commander_tests
-	lib/controllib/controllib_test
-	modules/mavlink/mavlink_tests
-	modules/uORB/uORB_tests
-	systemcmds/tests
+#	modules/commander/commander_tests
+#	lib/controllib/controllib_test
+#	modules/mavlink/mavlink_tests
+#	modules/uORB/uORB_tests
+#	systemcmds/tests
 
 	#
 	# General system control
 	#
-	modules/commander
+#	modules/commander
 	modules/events
-	modules/gpio_led
-	modules/land_detector
+#	modules/gpio_led
+#	modules/land_detector
 	modules/load_mon
 	modules/mavlink
-	modules/navigator
-	modules/uavcan
-	modules/camera_feedback
+#	modules/navigator
+#	modules/uavcan
+#	modules/camera_feedback
 
 	#
 	# Estimation modules
 	#
-	modules/attitude_estimator_q
+#	modules/attitude_estimator_q
 	modules/ekf2
-	modules/landing_target_estimator
-	modules/local_position_estimator
-	modules/position_estimator_inav
-	modules/wind_estimator
+#	modules/landing_target_estimator
+#	modules/local_position_estimator
+#	modules/position_estimator_inav
+#	modules/wind_estimator
 
 	#
 	# Vehicle Control
 	#
-	modules/fw_att_control
-	modules/fw_pos_control_l1
-	modules/gnd_att_control
-	modules/gnd_pos_control
-	modules/mc_att_control
-	modules/mc_pos_control
-	modules/vtol_att_control
+#	modules/fw_att_control
+#	modules/fw_pos_control_l1
+#	modules/gnd_att_control
+#	modules/gnd_pos_control
+#	modules/mc_att_control
+#	modules/mc_pos_control
+#	modules/vtol_att_control
 
 	#
 	# Logging
 	#
-	modules/logger
+#	modules/logger
 
 	#
 	# Library modules
@@ -125,17 +125,17 @@ set(config_module_list
 	#
 	# OBC challenge
 	#
-	examples/bottle_drop
+#	examples/bottle_drop
 
 	#
 	# Rover apps
 	#
-	examples/rover_steering_control
+#	examples/rover_steering_control
 
 	#
 	# Segway
 	#
-	examples/segway
+#	examples/segway
 
 	#
 	# Demo apps
@@ -143,16 +143,16 @@ set(config_module_list
 
 	# Tutorial code from
 	# https://px4.io/dev/px4_simple_app
-	examples/px4_simple_app
+#	examples/px4_simple_app
 
 	# Tutorial code from
 	# https://px4.io/dev/debug_values
-	examples/px4_mavlink_debug
+#	examples/px4_mavlink_debug
 
 	# Tutorial code from
 	# https://px4.io/dev/example_fixedwing_control
-	examples/fixedwing_control
+#	examples/fixedwing_control
 
 	# Hardware test
-	examples/hwtest
+#	examples/hwtest
 )

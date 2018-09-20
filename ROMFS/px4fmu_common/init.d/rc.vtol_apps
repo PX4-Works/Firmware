@@ -35,7 +35,7 @@ fi
 # EKF
 if param compare SYS_MC_EST_GROUP 2
 then
-	ekf2 start
+#	ekf2 start
 fi
 
 ###############################################################################

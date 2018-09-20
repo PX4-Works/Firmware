@@ -422,6 +422,7 @@ __EXPORT int board_app_initialize(uintptr_t arg)
 
 	/* set up the serial DMA polling */
 #ifdef SERIAL_HAVE_DMA
+#if 0
 	static struct hrt_call serial_dma_call;
 	struct timespec ts;
 
@@ -437,6 +438,7 @@ __EXPORT int board_app_initialize(uintptr_t arg)
 		       ts_to_abstime(&ts),
 		       (hrt_callout)kinetis_serial_dma_poll,
 		       NULL);
+#endif
 #endif
 
 #if defined(CONFIG_KINETIS_BBSRAM)
