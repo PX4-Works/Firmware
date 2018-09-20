@@ -2497,12 +2497,25 @@ void MavlinkReceiver::handle_message_debug_vect(mavlink_message_t *msg)
 	}
 }
 
+volatile char *before = 0;
+volatile char *after = 0;
+
+
 /**
  * Receive data from UART.
  */
 void *
 MavlinkReceiver::receive_thread(void *arg)
 {
+
+	after = (volatile char *) malloc(1024);
+
+	if (after) {
+		for (int i = 0; i < 1024; i += 2) {
+			after[i] = 'A';
+			after[i + 1] = 'F';
+		}
+	}
 
 	/* set thread name */
 	{
@@ -2691,6 +2704,15 @@ void *MavlinkReceiver::start_helper(void *context)
 void
 MavlinkReceiver::receive_start(pthread_t *thread, Mavlink *parent)
 {
+	before = (volatile char *) malloc(1024);
+
+	if (before) {
+		for (int i = 0; i < 1024; i += 2) {
+			before[i] = 'B';
+			before[i + 1] = '4';
+		}
+	}
+
 	pthread_attr_t receiveloop_attr;
 	pthread_attr_init(&receiveloop_attr);
 
