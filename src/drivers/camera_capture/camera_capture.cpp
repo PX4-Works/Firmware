@@ -86,6 +86,10 @@ CameraCapture::~CameraCapture()
 	camera_capture::g_camera_capture = nullptr;
 }
 
+uint32_t ov[4096];
+uint32_t edge_times[4096];
+int32_t edge_index = -1;
+
 void
 CameraCapture::capture_callback(uint32_t chan_index,
 				hrt_abstime edge_time, uint32_t edge_state, uint32_t overflow)
@@ -94,6 +98,21 @@ CameraCapture::capture_callback(uint32_t chan_index,
 	struct _trig_s trigger;
 
 	trigger.chan_index = chan_index;
+
+	if (edge_index < 4096) {
+		edge_index++;
+		edge_times[edge_index] = edge_time;
+		ov[edge_index] = overflow;
+
+	} else {
+		volatile static int k = 0;
+		k++;
+
+		if (k == 233) {
+			k = 12;
+		}
+	}
+
 	trigger.edge_time = edge_time;
 	trigger.edge_state = edge_state;
 	trigger.overflow = overflow;
@@ -116,6 +135,14 @@ void
 CameraCapture::publish_trigger()
 {
 	struct _trig_s trig;
+
+	if (edge_index == 4096) {
+		edge_index++;
+
+		for (int i = 4095; i > 0; i -= 2) {
+			printf("%d %d %d\n", edge_times[i - 1], edge_times[i], edge_times[i] - edge_times[i - 1]);
+		}
+	}
 
 	_trig_buffer->get(&trig);
 
