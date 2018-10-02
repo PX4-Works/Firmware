@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2017 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2018 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,7 +32,7 @@
  ****************************************************************************/
 
 /**
- * @file camera_feedback.hpp
+ * @file camera_capture.hpp
  *
  */
 
@@ -50,63 +50,103 @@
 
 #include <px4_config.h>
 #include <px4_defines.h>
+#include <px4_module.h>
 #include <px4_tasks.h>
-#include <px4_posix.h>
+#include <px4_workqueue.h>
+
 #include <drivers/drv_hrt.h>
+#include <drivers/drv_input_capture.h>
+#include <drivers/device/ringbuffer.h>
 
 #include <uORB/uORB.h>
 #include <uORB/topics/camera_trigger.h>
-#include <uORB/topics/camera_capture.h>
-#include <uORB/topics/vehicle_attitude.h>
-#include <uORB/topics/vehicle_local_position.h>
-#include <uORB/topics/vehicle_global_position.h>
+#include <uORB/topics/vehicle_command.h>
+#include <uORB/topics/vehicle_command_ack.h>
 
-
-class CameraFeedback
+class CameraCapture
 {
 public:
 	/**
 	 * Constructor
 	 */
-	CameraFeedback();
+	CameraCapture();
 
 	/**
 	 * Destructor, also kills task.
 	 */
-	~CameraFeedback();
+	~CameraCapture();
 
 	/**
 	 * Start the task.
-	 *
-	 * @return		OK on success.
 	 */
 	int			start();
 
 	/**
 	 * Stop the task.
 	 */
-	void		stop();
+	void			stop();
+
+	void 			status();
+
+	void			cycle();
+
+	static void		capture_trampoline(void *context, uint32_t chan_index,
+			hrt_abstime edge_time, uint32_t edge_state,
+			uint32_t overflow);
+
+	void 			set_capture_control(bool enabled);
+
+	void			reset_statistics(bool reset_seq);
+
+	void			publish_trigger();
+
+
+	static struct work_s	_work;
 
 private:
 
-	bool		_task_should_exit;		/**< if true, task should exit */
-	int			_main_task;				/**< handle for task */
+	bool			_capture_enabled;
 
-	int			_trigger_sub;
-	int			_gpos_sub;
-	int			_att_sub;
+	// Publishers
+	orb_advert_t	_trigger_pub;
+	orb_advert_t	_command_ack_pub;
 
-	orb_advert_t	_capture_pub;
+	// Subscribers
+	int				_command_sub;
 
-	param_t			_p_camera_capture_feedback;
+	// Trigger Buffer
+	struct _trig_s {
+		uint32_t chan_index;
+		hrt_abstime edge_time;
+		uint32_t edge_state;
+		uint32_t overflow;
+	};
 
-	int32_t _camera_capture_feedback;
+	ringbuffer::RingBuffer *_trig_buffer;
 
-	void		task_main();
+	// Parameters
+	param_t 		_p_strobe_delay;
+	float			_strobe_delay;
+	param_t			_p_camera_capture_mode;
+	int32_t			_camera_capture_mode;
+	param_t			_p_camera_capture_edge;
+	int32_t			_camera_capture_edge;
 
-	/**
-	 * Shim for calling task_main from task_create.
-	 */
-	static int	task_main_trampoline(int argc, char *argv[]);
+	// Signal capture statistics
+	uint32_t		_capture_seq;
+	hrt_abstime		_last_fall_time;
+	hrt_abstime		_last_exposure_time;
+	uint32_t 		_capture_overflows;
+
+	// Signal capture callback
+	void			capture_callback(uint32_t chan_index,
+			hrt_abstime edge_time, uint32_t edge_state, uint32_t overflow);
+
+	// Signal capture publish
+	static void		publish_trigger_trampoline(void *arg);
+
+	// Low-rate command handling loop
+	static void		cycle_trampoline(void *arg);
 
 };
+struct work_s CameraCapture::_work;

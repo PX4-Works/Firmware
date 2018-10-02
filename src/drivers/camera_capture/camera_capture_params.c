@@ -32,21 +32,55 @@
  ****************************************************************************/
 
 /**
- * @file camera_feedback_params.c
- * Camera feedback parameters
+ * @file camera_capture_params.c
+ * Camera capture parameters
  *
  * @author Mohammed Kabir <kabir@uasys.io>
  */
+/**
+ * Camera strobe delay
+ *
+ * This parameter sets the delay between image integration start and strobe firing
+ *
+ * @unit ms
+ * @min 0.0
+ * @max 100.0
+ * @decimal 1
+ * @group Camera Capture
+ */
+PARAM_DEFINE_FLOAT(CAM_CAP_DELAY, 1.0f);
 
 /**
- * Camera feedback mode
+ * Camera capture feedback
  *
- * Sets the camera feedback mode.
+ * Enables camera capture feedback
  *
- * @value 0 Disabled
- * @value 1 Feedback on trigger
- * @min 0
- * @max 1
+ * @boolean
  * @group Camera Control
+ * @reboot_required true
  */
-PARAM_DEFINE_INT32(CAM_FBACK_MODE, 0);
+PARAM_DEFINE_INT32(CAM_CAP_FBACK, 0);
+
+/**
+ * Camera capture timestamping mode
+ *
+ * Change time measurement
+ *
+ * @value 0 Get absolute timestamp
+ * @value 1 Get timestamp of mid exposure
+ *
+ * @group Camera Control
+ * @reboot_required true
+ */
+PARAM_DEFINE_INT32(CAM_CAP_MODE, 0);
+
+/**
+ * Camera capture edge
+ *
+ * @value 0 Falling edge
+ * @value 1 Rising edge
+ *
+ * @group Camera Control
+ * @reboot_required true
+ */
+PARAM_DEFINE_INT32(CAM_CAP_EDGE, 0);

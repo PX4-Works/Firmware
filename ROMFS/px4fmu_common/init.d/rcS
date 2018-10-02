@@ -474,8 +474,18 @@ else
 		fi
 
 		camera_trigger start
-		param set CAM_FBACK_MODE 1
 		camera_feedback start
+	fi
+
+	# Camera capture driver
+	if param greater CAM_CAP_FBACK 0
+	then
+		if camera_capture start
+		then
+			set FMU_MODE pwm4
+			set AUX_MODE pwm4
+			camera_capture on
+		fi
 	fi
 
 	#
